@@ -1069,7 +1069,7 @@ def DecisionTreeClassifier(Xtrn, ytrn, Xtst, ytst):
 DecisionTreeClassifier(X_train, y_train, X_test, y_test)
 
 
-# In[41]:
+# In[33]:
 
 
 from collections import defaultdict
@@ -1357,4 +1357,115 @@ def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
     pprint.pprint(results)
 
 NaiveBayesClassifier(X_train, y_train, X_test, y_test)
+
+
+# In[33]:
+
+
+import numpy as np
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+
+class XGBoostRegressor:
+    def __init__(self, max_depth=2, learning_rate=0.1, n_estimators=100):
+        self.max_depth = max_depth
+        self.learning_rate = learning_rate
+        self.n_estimators = n_estimators
+        self.trees = []
+
+    def _log_odds(self, p):
+        p = np.clip(p, 1e-5, 1 - 1e-5)
+        return np.log(p / (1 - p))
+
+    def _sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def fit(self, X, y):
+        y = (y == y.unique()[0]).astype(int)
+        pred = np.full(y.shape, y.mean())
+        for i in range(self.n_estimators):
+            grad = y - self._sigmoid(self._log_odds(pred))
+            tree = self._fit_tree(X, grad)
+            pred += self.learning_rate * self._predict_tree(X, tree)
+            self.trees.append(tree)
+
+    def predict_proba(self, X):
+        pred = np.full(X.shape[0], 0.5)
+        for tree in self.trees:
+            pred += self.learning_rate * self._predict_tree(X, tree)
+        return np.vstack([1 - pred, pred]).T
+
+    def predict(self, X):
+        proba = self.predict_proba(X)
+        return proba.argmax(axis=1)
+
+    def _get_split(self, X, grad):
+        best_gain = -float('inf')
+        best_feature = None
+        best_threshold = None
+        for feature in X.columns:
+            values = X[feature].unique()
+            for threshold in values:
+                left = grad[X[feature] < threshold].mean()
+                right = grad[X[feature] >= threshold].mean()
+                gain = (left ** 2 + right ** 2) / 2 - ((left + right) / 2) ** 2
+                if gain > best_gain:
+                    best_gain = gain
+                    best_feature = feature
+                    best_threshold = threshold
+        return best_feature, best_threshold
+
+    def _fit_tree(self, X, grad, depth=1):
+        if depth > self.max_depth or len(X) < 2:
+            return self._log_odds(grad.mean())
+        feature, threshold = self._get_split(X, grad)
+        tree = {
+            'feature': feature,
+            'threshold': threshold,
+            'left': self._fit_tree(X[X[feature] < threshold], grad[X[feature] < threshold], depth + 1),
+            'right': self._fit_tree(X[X[feature] >= threshold], grad[X[feature] >= threshold], depth + 1),
+        }
+        return tree
+
+    def _predict_tree(self, X, tree):
+        if isinstance(tree, float):
+            return tree
+        return np.where(X[tree['feature']] < tree['threshold'],
+                        self._predict_tree(X, tree['left']),
+                        self._predict_tree(X, tree['right']))
+        
+def XGBoostClassifier(Xtrn, ytrn, Xtst, ytst):
+    xg= XGBoostRegressor()
+    xg.fit(Xtrn, ytrn)
+    
+    y_pred=xg.predict(Xtst)
+    
+    tst_acc = accuracy_score(ytst, y_pred)
+    tst_precision, tst_recall, tst_f1, support  = precision_recall_fscore_support(ytst, y_pred, average='weighted')
+    print(f"Accuracy: {tst_acc}")
+    print(f"Precision: {tst_precision}")
+    print(f"Recall: {tst_recall}")
+    print(f"F1: {tst_f1}")
+    
+    xgb = XGBClassifier(n_estimators=100, max_depth=3, learning_rate=0.1)
+
+    xgb.fit(Xtrn, ytrn)
+
+    y_pred_xgb = xgb.predict(Xtst)
+
+    tst_acc = accuracy_score(ytst, y_pred_xgb)
+    tst_precision, tst_recall, tst_f1, support  = precision_recall_fscore_support(ytst, y_pred_xgb, average='weighted')
+    print(f"Accuracy: {tst_acc}")
+    print(f"Precision: {tst_precision}")
+    print(f"Recall: {tst_recall}")
+    print(f"F1: {tst_f1}")
+    
+XGBoostClassifier(X_train, y_train, X_test, y_test)    
+
+
+# In[ ]:
+
+
+
 
