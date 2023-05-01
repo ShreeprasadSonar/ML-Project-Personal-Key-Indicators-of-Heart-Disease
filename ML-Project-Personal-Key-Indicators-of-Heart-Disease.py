@@ -1359,12 +1359,6 @@ def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
 
 NaiveBayesClassifier(X_train, y_train, X_test, y_test)
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-
 # In[33]:
 
 
@@ -1470,13 +1464,6 @@ def XGBoostClassifier(Xtrn, ytrn, Xtst, ytst):
 XGBoostClassifier(X_train, y_train, X_test, y_test)    
 
 
-<<<<<<< Updated upstream
-# In[ ]:
-
-
-
-
-=======
 # In[37]:
 
 
@@ -1539,10 +1526,3 @@ def AUC_ROC_Curve():
 AUC_ROC_Curve()
 
 
-# In[ ]:
-
-
-x
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
