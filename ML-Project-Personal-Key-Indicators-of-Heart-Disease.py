@@ -5,7 +5,7 @@
 
 # ## 1. Importing Required Libraries
 
-# In[1]:
+# In[2]:
 
 
 import pandas as pd
@@ -24,6 +24,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
 from sklearn import model_selection
 from sklearn import metrics
 from sklearn.metrics import classification_report
@@ -35,7 +36,7 @@ from sklearn.utils import resample
 
 # ## 2. Data Preprocessing
 
-# In[2]:
+# In[3]:
 
 
 heart_2020_cleaned_df = pd.read_csv("data/heart_2020_cleaned.csv")
@@ -43,20 +44,20 @@ print("\n Heart 2020 Cleaned \n")
 print(heart_2020_cleaned_df.info())
 
 
-# In[3]:
+# In[4]:
 
 
 print("\n NA Values \n")
 print(heart_2020_cleaned_df.isna().sum())
 
 
-# In[4]:
+# In[5]:
 
 
 heart_2020_cleaned_df.head().T
 
 
-# In[5]:
+# In[6]:
 
 
 # Make a copy of the original DataFrame to perform edits on
@@ -67,7 +68,7 @@ df_tmp.columns
 
 # ### 2.1 Converting strings (object) to categories
 
-# In[6]:
+# In[7]:
 
 
 print("Labels for which data is string:")
@@ -76,7 +77,7 @@ for label, content in df_tmp.items():
         print(label)
 
 
-# In[7]:
+# In[8]:
 
 
 # This will turn all of the string values into category values
@@ -86,13 +87,13 @@ for label, content in df_tmp.items():
 df_tmp.info()
 
 
-# In[8]:
+# In[9]:
 
 
 df_tmp.AgeCategory.cat.categories
 
 
-# In[9]:
+# In[10]:
 
 
 df_tmp.GenHealth.cat.codes
@@ -102,14 +103,14 @@ df_tmp.GenHealth.cat.codes
 
 # ### 2.2 Saving Processed Data
 
-# In[10]:
+# In[11]:
 
 
 # Saving
 df_tmp.to_csv("data/heart_2020_cleaned_preprocessed.csv", index=False)
 
 
-# In[11]:
+# In[12]:
 
 
 # Importing
@@ -119,7 +120,7 @@ df_tmp.head().T
 
 # ### 2.3 Turning categorical values to numbers
 
-# In[12]:
+# In[13]:
 
 
 # Check columns which *aren't* numeric
@@ -128,7 +129,7 @@ for label, content in df_tmp.items():
         print(label)
 
 
-# In[13]:
+# In[14]:
 
 
 # Turn categorical variables into numbers and fill missing
@@ -138,19 +139,19 @@ for label, content in df_tmp.items():
         df_tmp[label] = pd.Categorical(content).codes
 
 
-# In[14]:
+# In[15]:
 
 
 df_tmp.info()
 
 
-# In[15]:
+# In[16]:
 
 
 df_tmp.head().T
 
 
-# In[16]:
+# In[17]:
 
 
 from sklearn.preprocessing import MinMaxScaler
@@ -168,7 +169,7 @@ print(df_normalized.head())
 
 # ### 2.4 Train - Test Split
 
-# In[17]:
+# In[18]:
 
 
 # Split data into X and y
@@ -180,31 +181,31 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 print(X_train.shape)
 
 
-# In[18]:
+# In[19]:
 
 
 X.head()
 
 
-# In[19]:
+# In[20]:
 
 
 y.head()
 
 
-# In[20]:
+# In[21]:
 
 
 X_train.head()
 
 
-# In[21]:
+# In[22]:
 
 
 y_train.head()
 
 
-# In[22]:
+# In[23]:
 
 
 # k fold cross validation
@@ -225,7 +226,7 @@ for train_index, test_index in kf.split(X_train, y_train):
 folds.keys()
 
 
-# In[23]:
+# In[24]:
 
 
 # perform undersampling
@@ -257,7 +258,7 @@ for fold_number in range(1, len(folds)+1):
 
 # ## 3. Exploratory Data Analysis
 
-# In[24]:
+# In[25]:
 
 
 counts = heart_2020_cleaned_df["HeartDisease"].value_counts()
@@ -271,7 +272,7 @@ for i, v in enumerate(counts):
     ax.text(i - 0.1, v + 10, f"{v} ({percentage[i]}%)", color="black", fontweight="bold")
 
 
-# In[25]:
+# In[26]:
 
 
 ct = pd.crosstab(heart_2020_cleaned_df.HeartDisease, heart_2020_cleaned_df.Sex, normalize="index")
@@ -288,7 +289,7 @@ for i, v in enumerate(ct.values):
 
 # ### Correlation
 
-# In[26]:
+# In[27]:
 
 
 df_normalized.corr()
@@ -296,7 +297,7 @@ df_normalized.corr()
 
 # #### If the two variables tend to increase and decrease together, the correlation value is positive. If one variable increases while the other variable decreases, the correlation value is negative.
 
-# In[27]:
+# In[28]:
 
 
 corr_matrix = df_tmp.corr()
@@ -312,7 +313,7 @@ ax.set_ylim(bottom + 0.5, top - 0.5)
 
 # #### Analysing Age Category, Diff Walking, Stroke, PhysicalHealth and Diabetic as they have highest values
 
-# In[28]:
+# In[29]:
 
 
 percentages = heart_2020_cleaned_df.groupby('AgeCategory')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
@@ -328,7 +329,7 @@ for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
 
-# In[29]:
+# In[30]:
 
 
 percentages = heart_2020_cleaned_df.groupby('DiffWalking')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
@@ -346,7 +347,7 @@ for p in ax.patches:
 plt.show()
 
 
-# In[30]:
+# In[31]:
 
 
 percentages = heart_2020_cleaned_df.groupby('Diabetic')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
@@ -362,7 +363,7 @@ for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
 
-# In[31]:
+# In[32]:
 
 
 PhysicalHealth_categories = {
@@ -416,7 +417,7 @@ for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
 
-# In[32]:
+# In[33]:
 
 
 percentages = heart_2020_cleaned_df.groupby('Stroke')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
@@ -1069,7 +1070,7 @@ def DecisionTreeClassifier(Xtrn, ytrn, Xtst, ytst):
 DecisionTreeClassifier(X_train, y_train, X_test, y_test)
 
 
-# In[33]:
+# In[41]:
 
 
 from collections import defaultdict
@@ -1358,7 +1359,6 @@ def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
 
 NaiveBayesClassifier(X_train, y_train, X_test, y_test)
 
-
 # In[33]:
 
 
@@ -1464,8 +1464,65 @@ def XGBoostClassifier(Xtrn, ytrn, Xtst, ytst):
 XGBoostClassifier(X_train, y_train, X_test, y_test)    
 
 
-# In[ ]:
+# In[37]:
 
 
+classifier_names = ["Logistic Regression", "Decision Tree", "Naive Bayes", "XGBoost", "KNN"]
+classifiers = [LogisticRegression(), DecisionTreeClassifier(), BernoulliNB(), XGBClassifier(), KNeighborsClassifier()]
+
+
+# In[38]:
+
+
+def Compare_Accuracy():
+    classifers_train_accuracy, classifiers_test_accuracy= [], []
+    for classifier in classifiers:
+        classifier.fit(X_train, y_train)
+        classifier_train_accuracy=classifier.score(X_train, y_train)
+        classifier_test_accuracy=classifier.score(X_test, y_test)
+        classifers_train_accuracy.append(classifier_train_accuracy)
+        classifiers_test_accuracy.append(classifier_test_accuracy)
+    
+    X_axis = np.arange(len(classifier_names))
+
+    plt.rcParams["figure.figsize"] = [7.5, 5]
+    plt.rcParams["figure.autolayout"] = True
+    
+    plt.bar(X_axis - 0.2, classifers_train_accuracy, 0.4, label = 'Train Accuracy')
+    plt.bar(X_axis + 0.2, classifiers_test_accuracy, 0.4, label = 'Test Accuracy')
+    
+    plt.xticks(X_axis, classifier_names)
+    plt.xlabel("Algorithm")
+    plt.ylabel("Accuracy")
+    plt.suptitle("Train/Test accuracues compared accross various models")
+    plt.legend()
+    plt.show()
+    # plt.savefig('accuracies.eps', format='eps')
+    plt.clf()    
+    
+Compare_Accuracy()
+
+
+# In[39]:
+
+
+def AUC_ROC_Curve():
+    i=0
+    for classifier in classifiers:
+        classifier.fit(X_train, y_train)
+        y_pred = classifier.predict_proba(X_test)[:, 1]
+        fpr, tpr, _ = metrics.roc_curve(y_test, y_pred)
+        auc = round(metrics.roc_auc_score(y_test, y_pred), 4)
+        plt.plot(fpr,tpr,label="{}, AUC={}%".format(classifier_names[i], str(round(auc*100, 2))))
+        i+=1
+        
+    plt.suptitle('ROC Curves for Algorithms')
+    plt.legend()
+    plt.grid()
+    plt.show()
+    # plt.savefig('roc.eps', format='eps')
+    plt.clf()
+
+AUC_ROC_Curve()
 
 
