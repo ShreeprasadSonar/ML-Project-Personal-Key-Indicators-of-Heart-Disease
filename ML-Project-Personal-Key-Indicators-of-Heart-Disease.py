@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
+"""ML-Project-Personal-Key-Indicators-of-Heart-Disease.ipynb
 
-# # ML Project
+# ML Project
 
-# ## 1. Importing Required Libraries
-
-# In[2]:
-
+## 1. Importing Required Libraries
+"""
 
 import pandas as pd
 import numpy as np
@@ -33,52 +31,28 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.model_selection import KFold
 from sklearn.utils import resample
 
-
-# ## 2. Data Preprocessing
-
-# In[3]:
-
+"""## 2. Data Preprocessing"""
 
 heart_2020_cleaned_df = pd.read_csv("data/heart_2020_cleaned.csv")
 print("\n Heart 2020 Cleaned \n")
 print(heart_2020_cleaned_df.info())
 
-
-# In[4]:
-
-
 print("\n NA Values \n")
 print(heart_2020_cleaned_df.isna().sum())
 
-
-# In[5]:
-
-
 heart_2020_cleaned_df.head().T
-
-
-# In[6]:
-
 
 # Make a copy of the original DataFrame to perform edits on
 df_tmp = heart_2020_cleaned_df.copy()
 df_tmp = pd.get_dummies(df_tmp, columns=['Sex', 'Race']) # one hot encoding for sex and race 
 df_tmp.columns
 
-
-# ### 2.1 Converting strings (object) to categories
-
-# In[7]:
-
+"""### 2.1 Converting strings (object) to categories"""
 
 print("Labels for which data is string:")
 for label, content in df_tmp.items():
     if pd.api.types.is_string_dtype(content):
         print(label)
-
-
-# In[8]:
-
 
 # This will turn all of the string values into category values
 for label, content in df_tmp.items():
@@ -86,51 +60,28 @@ for label, content in df_tmp.items():
         df_tmp[label] = content.astype("category").cat.as_ordered()
 df_tmp.info()
 
-
-# In[9]:
-
-
 df_tmp.AgeCategory.cat.categories
-
-
-# In[10]:
-
 
 df_tmp.GenHealth.cat.codes
 
+"""#### All of our data is categorical and thus we can now turn the categories into numbers.
 
-# #### All of our data is categorical and thus we can now turn the categories into numbers.
-
-# ### 2.2 Saving Processed Data
-
-# In[11]:
-
+### 2.2 Saving Processed Data
+"""
 
 # Saving
 df_tmp.to_csv("data/heart_2020_cleaned_preprocessed.csv", index=False)
-
-
-# In[12]:
-
 
 # Importing
 df_tmp = pd.read_csv("data/heart_2020_cleaned_preprocessed.csv")
 df_tmp.head().T
 
-
-# ### 2.3 Turning categorical values to numbers
-
-# In[13]:
-
+"""### 2.3 Turning categorical values to numbers"""
 
 # Check columns which *aren't* numeric
 for label, content in df_tmp.items():
     if not pd.api.types.is_numeric_dtype(content):
         print(label)
-
-
-# In[14]:
-
 
 # Turn categorical variables into numbers and fill missing
 for label, content in df_tmp.items():
@@ -138,21 +89,9 @@ for label, content in df_tmp.items():
     if not pd.api.types.is_numeric_dtype(content):
         df_tmp[label] = pd.Categorical(content).codes
 
-
-# In[15]:
-
-
 df_tmp.info()
 
-
-# In[16]:
-
-
 df_tmp.head().T
-
-
-# In[17]:
-
 
 from sklearn.preprocessing import MinMaxScaler
 # create the scaler object
@@ -166,11 +105,7 @@ df_normalized = pd.DataFrame(normalized_data, columns=df_tmp.columns)
 
 print(df_normalized.head())
 
-
-# ### 2.4 Train - Test Split
-
-# In[18]:
-
+"""### 2.4 Train - Test Split"""
 
 # Split data into X and y
 X = df_normalized.drop("HeartDisease", axis=1)
@@ -180,33 +115,13 @@ y = df_normalized["HeartDisease"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=21)
 print(X_train.shape)
 
-
-# In[19]:
-
-
 X.head()
-
-
-# In[20]:
-
 
 y.head()
 
-
-# In[21]:
-
-
 X_train.head()
 
-
-# In[22]:
-
-
 y_train.head()
-
-
-# In[23]:
-
 
 # k fold cross validation
 kf = KFold(n_splits=10, shuffle=True, random_state=21) # random_state is hardcoded to ensure reproducibility
@@ -224,10 +139,6 @@ for train_index, test_index in kf.split(X_train, y_train):
     counter += 1
 
 folds.keys()
-
-
-# In[24]:
-
 
 # perform undersampling
 
@@ -251,15 +162,8 @@ for fold_number in range(1, len(folds)+1):
 
     # indexing into Xy_pairs = Xy_pairs[fold_number 1 to 10][subsample number 1-9]
     # subsample number 1 means 1:1 distribution (label 0: label 1), 2 means 2:1 distribution
-    
-    
-    
 
-
-# ## 3. Exploratory Data Analysis
-
-# In[25]:
-
+"""## 3. Exploratory Data Analysis"""
 
 counts = heart_2020_cleaned_df["HeartDisease"].value_counts()
 percentage = round(counts / counts.sum() * 100, 2)
@@ -270,10 +174,6 @@ plt.xticks(rotation=0)
 
 for i, v in enumerate(counts):
     ax.text(i - 0.1, v + 10, f"{v} ({percentage[i]}%)", color="black", fontweight="bold")
-
-
-# In[26]:
-
 
 ct = pd.crosstab(heart_2020_cleaned_df.HeartDisease, heart_2020_cleaned_df.Sex, normalize="index")
 ct = ct.round(2) * 100
@@ -286,19 +186,11 @@ plt.xticks(rotation=0)
 for i, v in enumerate(ct.values):
     ax.text(i - 0.1, v[1] + 1, f"{v[0]}% / {v[1]}%", color="black", fontweight="bold")
 
-
-# ### Correlation
-
-# In[27]:
-
+"""### Correlation"""
 
 df_normalized.corr()
 
-
-# #### If the two variables tend to increase and decrease together, the correlation value is positive. If one variable increases while the other variable decreases, the correlation value is negative.
-
-# In[28]:
-
+"""#### If the two variables tend to increase and decrease together, the correlation value is positive. If one variable increases while the other variable decreases, the correlation value is negative."""
 
 corr_matrix = df_tmp.corr()
 fig, ax = plt.subplots(figsize=(15, 10))
@@ -310,11 +202,7 @@ ax = sns.heatmap(corr_matrix,
 bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
-
-# #### Analysing Age Category, Diff Walking, Stroke, PhysicalHealth and Diabetic as they have highest values
-
-# In[29]:
-
+"""#### Analysing Age Category, Diff Walking, Stroke, PhysicalHealth and Diabetic as they have highest values"""
 
 percentages = heart_2020_cleaned_df.groupby('AgeCategory')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
@@ -327,10 +215,6 @@ plt.legend(title="Heart Disease", loc='upper right')
 
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
-
-
-# In[30]:
-
 
 percentages = heart_2020_cleaned_df.groupby('DiffWalking')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
@@ -346,10 +230,6 @@ for p in ax.patches:
     
 plt.show()
 
-
-# In[31]:
-
-
 percentages = heart_2020_cleaned_df.groupby('Diabetic')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 order = ['0-5', '6-10', '11-15', '16-20', '21-25', '26-30']
 plt.figure(figsize=(10, 6))
@@ -361,10 +241,6 @@ plt.legend(title="Heart Disease", loc='upper right')
 
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
-
-
-# In[32]:
-
 
 PhysicalHealth_categories = {
     0.0: '0-5',
@@ -416,10 +292,6 @@ plt.legend(title="Heart Disease", loc='upper right')
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
-
-# In[33]:
-
-
 percentages = heart_2020_cleaned_df.groupby('Stroke')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
 plt.figure(figsize=(10, 6))
@@ -432,11 +304,7 @@ plt.legend(title="Heart Disease", loc='upper right')
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
-
-# ## 4. Trying out sample model
-
-# In[34]:
-
+"""## 4. Trying out sample model"""
 
 model = LogisticRegression(n_jobs=-1, max_iter=150)
 for fold_number in folds.keys():
@@ -444,29 +312,13 @@ for fold_number in folds.keys():
     model.fit(folds[fold_number][0], folds[fold_number][1])
     print(model.score(folds[fold_number][2], folds[fold_number][3])*100)
 
-
-# In[35]:
-
-
 model.score(X_test, y_test)
 
-
-# In[36]:
-
-
 predicted = list(model.predict(X_test))
-
-
-# In[37]:
-
 
 print(len(predicted))
 print(predicted.count(0))
 print(predicted.count(1))
-
-
-# In[38]:
-
 
 model2 = LogisticRegression(n_jobs=-1, max_iter=150)
 for fold_number in range(1, 11):
@@ -475,15 +327,7 @@ for fold_number in range(1, 11):
         model2.fit(Xy_pairs[fold_number][subsample][0], Xy_pairs[fold_number][subsample][1])
         print(model2.score(X_test, y_test)*100)
 
-
-# In[39]:
-
-
 print(model2.score(X_test, y_test)*100)
-
-
-# In[40]:
-
 
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
@@ -643,9 +487,11 @@ def LogisticRegressionClassifier(Xtrn, ytrn, Xtst, ytst, a, iters):
 
 LogisticRegressionClassifier(X_train, y_train, X_test, y_test, 0.1, 100)
 
-
-# In[ ]:
-
+for fold_number in range(1, 11):
+    for subsample in range(1, 10):
+        print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
+        LogisticRegressionClassifier(Xy_pairs[fold_number][subsample][0], Xy_pairs[fold_number][subsample][1],
+                                    X_test, y_test, 0.1, 150)
 
 #!/usr/bin/env python
 # coding: utf-8
@@ -1069,9 +915,12 @@ def DecisionTreeClassifier(Xtrn, ytrn, Xtst, ytst):
             
 DecisionTreeClassifier(X_train, y_train, X_test, y_test)
 
-
-# In[41]:
-
+for fold_number in range(1, 11): # takes too much time
+    for subsample in range(1, 10):
+        print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
+        DecisionTreeClassifier(Xy_pairs[fold_number][subsample][0],
+                               Xy_pairs[fold_number][subsample][1], 
+                               X_test, y_test)
 
 from collections import defaultdict
 import pprint
@@ -1359,8 +1208,12 @@ def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
 
 NaiveBayesClassifier(X_train, y_train, X_test, y_test)
 
-# In[33]:
-
+for fold_number in range(1, 11):
+    for subsample in range(1, 10):
+        print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
+        NaiveBayesClassifier(Xy_pairs[fold_number][subsample][0],
+                             Xy_pairs[fold_number][subsample][1], 
+                             X_test, y_test)
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -1461,18 +1314,17 @@ def XGBoostClassifier(Xtrn, ytrn, Xtst, ytst):
     print(f"Recall: {tst_recall}")
     print(f"F1: {tst_f1}")
     
-XGBoostClassifier(X_train, y_train, X_test, y_test)    
+XGBoostClassifier(X_train, y_train, X_test, y_test)
 
-
-# In[37]:
-
+for fold_number in range(1, 11):
+    for subsample in range(1, 10):
+        print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
+        XGBoostClassifier(Xy_pairs[fold_number][subsample][0],
+                          Xy_pairs[fold_number][subsample][1], 
+                          X_test, y_test)
 
 classifier_names = ["Logistic Regression", "Decision Tree", "Naive Bayes", "XGBoost", "KNN"]
 classifiers = [LogisticRegression(), DecisionTreeClassifier(), BernoulliNB(), XGBClassifier(), KNeighborsClassifier()]
-
-
-# In[38]:
-
 
 def Compare_Accuracy():
     classifers_train_accuracy, classifiers_test_accuracy= [], []
@@ -1502,10 +1354,6 @@ def Compare_Accuracy():
     
 Compare_Accuracy()
 
-
-# In[39]:
-
-
 def AUC_ROC_Curve():
     i=0
     for classifier in classifiers:
@@ -1525,4 +1373,4 @@ def AUC_ROC_Curve():
 
 AUC_ROC_Curve()
 
-
+x
