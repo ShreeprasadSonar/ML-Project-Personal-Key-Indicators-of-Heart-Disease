@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
-"""ML-Project-Personal-Key-Indicators-of-Heart-Disease.ipynb
+#!/usr/bin/env python
+# coding: utf-8
 
-# ML Project
+# # ML Project
 
-## 1. Importing Required Libraries
-"""
+# ## 1. Importing Required Libraries
+
+# In[4]:
+
 
 import pandas as pd
 import numpy as np
@@ -31,28 +33,52 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.model_selection import KFold
 from sklearn.utils import resample
 
-"""## 2. Data Preprocessing"""
+
+# ## 2. Data Preprocessing
+
+# In[5]:
+
 
 heart_2020_cleaned_df = pd.read_csv("data/heart_2020_cleaned.csv")
 print("\n Heart 2020 Cleaned \n")
 print(heart_2020_cleaned_df.info())
 
+
+# In[6]:
+
+
 print("\n NA Values \n")
 print(heart_2020_cleaned_df.isna().sum())
 
+
+# In[7]:
+
+
 heart_2020_cleaned_df.head().T
+
+
+# In[8]:
+
 
 # Make a copy of the original DataFrame to perform edits on
 df_tmp = heart_2020_cleaned_df.copy()
 df_tmp = pd.get_dummies(df_tmp, columns=['Sex', 'Race']) # one hot encoding for sex and race 
 df_tmp.columns
 
-"""### 2.1 Converting strings (object) to categories"""
+
+# ### 2.1 Converting strings (object) to categories
+
+# In[9]:
+
 
 print("Labels for which data is string:")
 for label, content in df_tmp.items():
     if pd.api.types.is_string_dtype(content):
         print(label)
+
+
+# In[10]:
+
 
 # This will turn all of the string values into category values
 for label, content in df_tmp.items():
@@ -60,28 +86,51 @@ for label, content in df_tmp.items():
         df_tmp[label] = content.astype("category").cat.as_ordered()
 df_tmp.info()
 
+
+# In[11]:
+
+
 df_tmp.AgeCategory.cat.categories
+
+
+# In[12]:
+
 
 df_tmp.GenHealth.cat.codes
 
-"""#### All of our data is categorical and thus we can now turn the categories into numbers.
 
-### 2.2 Saving Processed Data
-"""
+# #### All of our data is categorical and thus we can now turn the categories into numbers.
+
+# ### 2.2 Saving Processed Data
+
+# In[13]:
+
 
 # Saving
 df_tmp.to_csv("data/heart_2020_cleaned_preprocessed.csv", index=False)
+
+
+# In[14]:
+
 
 # Importing
 df_tmp = pd.read_csv("data/heart_2020_cleaned_preprocessed.csv")
 df_tmp.head().T
 
-"""### 2.3 Turning categorical values to numbers"""
+
+# ### 2.3 Turning categorical values to numbers
+
+# In[15]:
+
 
 # Check columns which *aren't* numeric
 for label, content in df_tmp.items():
     if not pd.api.types.is_numeric_dtype(content):
         print(label)
+
+
+# In[16]:
+
 
 # Turn categorical variables into numbers and fill missing
 for label, content in df_tmp.items():
@@ -89,9 +138,21 @@ for label, content in df_tmp.items():
     if not pd.api.types.is_numeric_dtype(content):
         df_tmp[label] = pd.Categorical(content).codes
 
+
+# In[17]:
+
+
 df_tmp.info()
 
+
+# In[18]:
+
+
 df_tmp.head().T
+
+
+# In[19]:
+
 
 from sklearn.preprocessing import MinMaxScaler
 # create the scaler object
@@ -105,7 +166,11 @@ df_normalized = pd.DataFrame(normalized_data, columns=df_tmp.columns)
 
 print(df_normalized.head())
 
-"""### 2.4 Train - Test Split"""
+
+# ### 2.4 Train - Test Split
+
+# In[20]:
+
 
 # Split data into X and y
 X = df_normalized.drop("HeartDisease", axis=1)
@@ -115,13 +180,33 @@ y = df_normalized["HeartDisease"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=21)
 print(X_train.shape)
 
+
+# In[21]:
+
+
 X.head()
+
+
+# In[22]:
+
 
 y.head()
 
+
+# In[23]:
+
+
 X_train.head()
 
+
+# In[24]:
+
+
 y_train.head()
+
+
+# In[25]:
+
 
 # k fold cross validation
 kf = KFold(n_splits=10, shuffle=True, random_state=21) # random_state is hardcoded to ensure reproducibility
@@ -139,6 +224,10 @@ for train_index, test_index in kf.split(X_train, y_train):
     counter += 1
 
 folds.keys()
+
+
+# In[26]:
+
 
 # perform undersampling
 
@@ -162,8 +251,15 @@ for fold_number in range(1, len(folds)+1):
 
     # indexing into Xy_pairs = Xy_pairs[fold_number 1 to 10][subsample number 1-9]
     # subsample number 1 means 1:1 distribution (label 0: label 1), 2 means 2:1 distribution
+    
+    
+    
 
-"""## 3. Exploratory Data Analysis"""
+
+# ## 3. Exploratory Data Analysis
+
+# In[27]:
+
 
 counts = heart_2020_cleaned_df["HeartDisease"].value_counts()
 percentage = round(counts / counts.sum() * 100, 2)
@@ -174,6 +270,10 @@ plt.xticks(rotation=0)
 
 for i, v in enumerate(counts):
     ax.text(i - 0.1, v + 10, f"{v} ({percentage[i]}%)", color="black", fontweight="bold")
+
+
+# In[28]:
+
 
 ct = pd.crosstab(heart_2020_cleaned_df.HeartDisease, heart_2020_cleaned_df.Sex, normalize="index")
 ct = ct.round(2) * 100
@@ -186,11 +286,19 @@ plt.xticks(rotation=0)
 for i, v in enumerate(ct.values):
     ax.text(i - 0.1, v[1] + 1, f"{v[0]}% / {v[1]}%", color="black", fontweight="bold")
 
-"""### Correlation"""
+
+# ### Correlation
+
+# In[29]:
+
 
 df_normalized.corr()
 
-"""#### If the two variables tend to increase and decrease together, the correlation value is positive. If one variable increases while the other variable decreases, the correlation value is negative."""
+
+# #### If the two variables tend to increase and decrease together, the correlation value is positive. If one variable increases while the other variable decreases, the correlation value is negative.
+
+# In[30]:
+
 
 corr_matrix = df_tmp.corr()
 fig, ax = plt.subplots(figsize=(15, 10))
@@ -202,7 +310,11 @@ ax = sns.heatmap(corr_matrix,
 bottom, top = ax.get_ylim()
 ax.set_ylim(bottom + 0.5, top - 0.5)
 
-"""#### Analysing Age Category, Diff Walking, Stroke, PhysicalHealth and Diabetic as they have highest values"""
+
+# #### Analysing Age Category, Diff Walking, Stroke, PhysicalHealth and Diabetic as they have highest values
+
+# In[31]:
+
 
 percentages = heart_2020_cleaned_df.groupby('AgeCategory')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
@@ -215,6 +327,10 @@ plt.legend(title="Heart Disease", loc='upper right')
 
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
+
+
+# In[32]:
+
 
 percentages = heart_2020_cleaned_df.groupby('DiffWalking')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
@@ -230,6 +346,10 @@ for p in ax.patches:
     
 plt.show()
 
+
+# In[33]:
+
+
 percentages = heart_2020_cleaned_df.groupby('Diabetic')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 order = ['0-5', '6-10', '11-15', '16-20', '21-25', '26-30']
 plt.figure(figsize=(10, 6))
@@ -241,6 +361,10 @@ plt.legend(title="Heart Disease", loc='upper right')
 
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
+
+
+# In[34]:
+
 
 PhysicalHealth_categories = {
     0.0: '0-5',
@@ -292,6 +416,10 @@ plt.legend(title="Heart Disease", loc='upper right')
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
+
+# In[35]:
+
+
 percentages = heart_2020_cleaned_df.groupby('Stroke')['HeartDisease'].value_counts(normalize=True).mul(100).reset_index(name='Percentage')
 
 plt.figure(figsize=(10, 6))
@@ -304,30 +432,22 @@ plt.legend(title="Heart Disease", loc='upper right')
 for p in ax.patches:
     ax.annotate('{:.1f}%'.format(p.get_height()), (p.get_x()+p.get_width()/2, p.get_height()), ha='center')
 
-"""## 4. Trying out sample model"""
 
-model = LogisticRegression(n_jobs=-1, max_iter=150)
-for fold_number in folds.keys():
-    print(fold_number)
-    model.fit(folds[fold_number][0], folds[fold_number][1])
-    print(model.score(folds[fold_number][2], folds[fold_number][3])*100)
+# ## 4. Custom Implementation
 
-model.score(X_test, y_test)
+# ## i) Logistic Regression
 
-predicted = list(model.predict(X_test))
+# In[87]:
 
-print(len(predicted))
-print(predicted.count(0))
-print(predicted.count(1))
 
-model2 = LogisticRegression(n_jobs=-1, max_iter=150)
-for fold_number in range(1, 11):
-    for subsample in range(1, 10):
-        print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
-        model2.fit(Xy_pairs[fold_number][subsample][0], Xy_pairs[fold_number][subsample][1])
-        print(model2.score(X_test, y_test)*100)
+Custom_LR_Training_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Custom_LR_Testing_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Sklearn_LR_Training_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Sklearn_LR_Testing_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
 
-print(model2.score(X_test, y_test)*100)
+
+# In[59]:
+
 
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
@@ -440,33 +560,20 @@ class SimpleLogisiticRegression():
         error_rate = error_count / n
         return error_rate
 
-def LogisticRegressionClassifier(Xtrn, ytrn, Xtst, ytst, a, iters):
+def LogisticRegressionClassifier(Xtrn, ytrn, Xtst, ytst, a, iters, fold=1, sample=1):
     lr =  SimpleLogisiticRegression()
     
     lr.fit(Xtrn, ytrn, lr=a, iters=iters, recompute=True)
-    #print(Xtrn)
-    #for row in Xtrn.iterrows():
-        #print(row);
-    #print(lr.w);
         
     y_pred_trn = [lr.predict_example(lr.w,x) for x in Xtrn.values]
     y_pred_tst = [lr.predict_example(lr.w,x) for x in Xtst.values]
     
-    
-    print("\nSimple Logistic Regression Algorithm:")
-    error_trn = lr.compute_error(ytrn, y_pred_trn)
-    error_tst = lr.compute_error(ytst, y_pred_tst)
-    print("\nTraining Error : ", error_trn)
-    print("\nTesting Error : ", error_tst)
-    
-    
     train_acc_custom = accuracy_score(ytrn, y_pred_trn)
     test_acc_custom = accuracy_score(ytst, y_pred_tst)
+    Custom_LR_Training_Accuracies[fold][sample]=train_acc_custom
+    Custom_LR_Testing_Accuracies[fold][sample]=test_acc_custom
+
     
-    print("\nTraining Accuracy:", train_acc_custom)
-    print("\nTesting Accuracy:", test_acc_custom)
-    
-    print("\nScikit-learn's Logistic Regression Algorithm:")
     lr_scikit = LogisticRegression()
     lr_scikit.fit(Xtrn, ytrn)
     y_pred_trn_scikit = lr_scikit.predict(Xtrn)
@@ -474,24 +581,56 @@ def LogisticRegressionClassifier(Xtrn, ytrn, Xtst, ytst, a, iters):
     error_trn = lr.compute_error(ytrn, y_pred_trn_scikit)
     error_tst = lr.compute_error(ytst, y_pred_tst_scikit)
     
-    print("\nTraining Error : ", error_trn)
-    print("\nTesting Error : ", error_tst)
-    
-    #print("Min test error = %.4f" % error_tst)
-    
     train_acc_sklearn = accuracy_score(ytrn, y_pred_trn_scikit)
     test_acc_sklearn = accuracy_score(ytst, y_pred_tst_scikit)
+    Sklearn_LR_Training_Accuracies[fold][sample]=train_acc_sklearn
+    Sklearn_LR_Testing_Accuracies[fold][sample]=test_acc_sklearn
     
-    print("\nTraining Accuracy:", train_acc_sklearn)
-    print("\nTesting Accuracy:", test_acc_sklearn)
 
-LogisticRegressionClassifier(X_train, y_train, X_test, y_test, 0.1, 100)
+#LogisticRegressionClassifier(X_train, y_train, X_test, y_test, 0.1, 100)
+
+
+# In[61]:
+
 
 for fold_number in range(1, 11):
     for subsample in range(1, 10):
         print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
         LogisticRegressionClassifier(Xy_pairs[fold_number][subsample][0], Xy_pairs[fold_number][subsample][1],
-                                    X_test, y_test, 0.1, 150)
+                                    X_test, y_test, 0.1, 150, fold_number-1, subsample-1)
+print(Custom_LR_Training_Accuracies)
+
+
+# In[74]:
+
+
+def plot_accuracies(accuracies):
+    sampling_ratios = ['1:1', '2:1', '3:1', '4:1', '5:1', '6:1', '7:1', '8:1', '9:1']
+    
+    accuracies_mean = np.mean(accuracies, axis=0)
+    
+    for i in range(len(accuracies)):
+        plt.plot(sampling_ratios, accuracies[i], label='Fold ' + str(i+1))
+    
+    plt.plot(sampling_ratios, accuracies_mean, label='Mean', linestyle='--', linewidth=2)
+    
+    plt.xlabel('Sampling Ratio')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy vs. Sampling Ratio for ' + str(len(accuracies)) + '-Fold Cross Validation')
+    plt.legend()
+    
+    plt.show()
+
+plot_accuracies(Custom_LR_Training_Accuracies)
+plot_accuracies(Custom_LR_Testing_Accuracies)
+plot_accuracies(Sklearn_LR_Training_Accuracies)
+plot_accuracies(Sklearn_LR_Testing_Accuracies)
+
+
+# ## ii) Decision Tree with bagging and boosting
+
+# In[75]:
+
 
 #!/usr/bin/env python
 # coding: utf-8
@@ -913,7 +1052,11 @@ def DecisionTreeClassifier(Xtrn, ytrn, Xtst, ytst):
             print("Error rate = {0:4.4f}%".format((1 - accuracy)*100))
             custom_confusion_matrix(ytst,y_pred)
             
-DecisionTreeClassifier(X_train, y_train, X_test, y_test)
+#DecisionTreeClassifier(X_train, y_train, X_test, y_test)
+
+
+# In[76]:
+
 
 for fold_number in range(1, 11): # takes too much time
     for subsample in range(1, 10):
@@ -921,6 +1064,21 @@ for fold_number in range(1, 11): # takes too much time
         DecisionTreeClassifier(Xy_pairs[fold_number][subsample][0],
                                Xy_pairs[fold_number][subsample][1], 
                                X_test, y_test)
+
+
+# ## iii) Naive Bayes
+
+# In[79]:
+
+
+Custom_NB_Training_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Custom_NB_Testing_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Sklearn_NB_Training_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+Sklearn_NB_Testing_Accuracies = [[0 for j in range(1, 10)] for i in range(1, 11)]
+
+
+# In[82]:
+
 
 from collections import defaultdict
 import pprint
@@ -1140,7 +1298,7 @@ def compute_f1(y_true, y_pred):
     f1 = 2 * (precision * recall) / (precision + recall)
     return f1
 
-def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
+def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst, fold, sample):
     X_columns = Xtrn.columns
     #X_columns = df_train.columns
     #print(len(X_columns))
@@ -1155,65 +1313,79 @@ def NaiveBayesClassifier(Xtrn, ytrn, Xtst, ytst):
     ytst = np.array(ytst)
     results = {} #To Store All Results
 
-    #print(ytrn)
-    # PART A
-    print("\n Part A")
     NB = Simple_NB()
     #df_test = df_test[X_columns[:-1]]
     NB.fit(Xtrn, ytrn, column_names=X_columns, alpha=1)
     
-    # Prediction on Test Set
     
-    y_pred = []
+    y_pred_tst = []
+    y_pred_trn = []
+    for x in Xtrn:
+        y_pred_trn.append(NB.predict_example(x))
     for x in Xtst:
-        y_pred.append(NB.predict_example(x))
-    y_pred = np.array(y_pred)
-    tst_acc = compute_accuracy(ytst, y_pred)
-    tst_precision = compute_precision(ytst, y_pred)
-    tst_recall = compute_recall(ytst, y_pred)
-    tst_f1 = compute_f1(ytst, y_pred)
-
-
-    results["Simple Naive Bayes"] = {"accuracy": tst_acc, 
-                                    "precision": tst_precision, 
-                                    "recall": tst_recall,
-                                    "f1_score": tst_f1,}
+        y_pred_tst.append(NB.predict_example(x))
+    y_pred_trn = np.array(y_pred_trn)
     
-    models={
-            "Gaussian Naive Bayes": GaussianNB(),
-            "Multinomial Naive Bayes": MultinomialNB(), 
-            "Bernoulli Naive Bayes": BernoulliNB(),
-    }
+    y_pred_tst = np.array(y_pred_tst)
+    trn_acc = compute_accuracy(ytrn, y_pred_trn)
+    tst_acc = compute_accuracy(ytst, y_pred_tst)
     
-    for model_name, model in models.items():
+    Custom_NB_Training_Accuracies[fold][sample]=trn_acc
+    Custom_NB_Testing_Accuracies[fold][sample]=tst_acc
+    
+    tst_precision = compute_precision(ytst, y_pred_tst)
+    tst_recall = compute_recall(ytst, y_pred_tst)
+    tst_f1 = compute_f1(ytst, y_pred_tst)
 
-        model.fit(Xtrn, ytrn)
+    
+    model=GaussianNB()
+            
+    model.fit(Xtrn, ytrn)
 
-        # Predict the target values for test set
-        y_pred = model.predict(Xtst)
+    y_pred_trn = model.predict(Xtrn)
+    y_pred_tst = model.predict(Xtst)
+    
+    
+    # Evaluate the Models with the different metrics
+    tst_accuracy = compute_accuracy(ytst, y_pred_tst)
+    trn_accuracy = compute_accuracy(ytrn, y_pred_trn)
+    
+    precision = compute_precision(ytst, y_pred_tst)
+    recall = compute_recall(ytst, y_pred_tst)
+    f1 = compute_f1(ytst, y_pred_tst)
+    
+    Sklearn_NB_Training_Accuracies[fold][sample]=trn_accuracy
+    Sklearn_NB_Testing_Accuracies[fold][sample]=tst_accuracy
+    
+    #pprint.pprint(results)
 
-        # Evaluate the Models with the different metrics
-        accuracy = compute_accuracy(ytst, y_pred)
-        precision = compute_precision(ytst, y_pred)
-        recall = compute_recall(ytst, y_pred)
-        f1 = compute_f1(ytst, y_pred)
-        
-        results[model_name] =   {"accuracy": accuracy, 
-                                "precision": precision, 
-                                "recall": recall, 
-                                "f1_score": f1
-                                }
+#NaiveBayesClassifier(X_train, y_train, X_test, y_test)
 
-    pprint.pprint(results)
 
-NaiveBayesClassifier(X_train, y_train, X_test, y_test)
+# In[84]:
+
 
 for fold_number in range(1, 11):
     for subsample in range(1, 10):
         print("Fold: "+str(fold_number)+" subsample: "+str(subsample)+":1")
         NaiveBayesClassifier(Xy_pairs[fold_number][subsample][0],
                              Xy_pairs[fold_number][subsample][1], 
-                             X_test, y_test)
+                             X_test, y_test, fold_number-1, subsample-1)
+
+
+# In[85]:
+
+
+plot_accuracies(Custom_NB_Training_Accuracies)
+plot_accuracies(Custom_NB_Testing_Accuracies)
+plot_accuracies(Sklearn_NB_Training_Accuracies)
+plot_accuracies(Sklearn_NB_Testing_Accuracies)
+
+
+# ## iv) XGBoost
+
+# In[ ]:
+
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -1314,7 +1486,11 @@ def XGBoostClassifier(Xtrn, ytrn, Xtst, ytst):
     print(f"Recall: {tst_recall}")
     print(f"F1: {tst_f1}")
     
-XGBoostClassifier(X_train, y_train, X_test, y_test)
+XGBoostClassifier(X_train, y_train, X_test, y_test)    
+
+
+# In[ ]:
+
 
 for fold_number in range(1, 11):
     for subsample in range(1, 10):
@@ -1323,8 +1499,18 @@ for fold_number in range(1, 11):
                           Xy_pairs[fold_number][subsample][1], 
                           X_test, y_test)
 
+
+# ## 5. Comparing Scikit Learn 
+
+# In[ ]:
+
+
 classifier_names = ["Logistic Regression", "Decision Tree", "Naive Bayes", "XGBoost", "KNN"]
 classifiers = [LogisticRegression(), DecisionTreeClassifier(), BernoulliNB(), XGBClassifier(), KNeighborsClassifier()]
+
+
+# In[ ]:
+
 
 def Compare_Accuracy():
     classifers_train_accuracy, classifiers_test_accuracy= [], []
@@ -1354,6 +1540,12 @@ def Compare_Accuracy():
     
 Compare_Accuracy()
 
+
+# ## 6. AUC/ROC Curve 
+
+# In[ ]:
+
+
 def AUC_ROC_Curve():
     i=0
     for classifier in classifiers:
@@ -1373,4 +1565,9 @@ def AUC_ROC_Curve():
 
 AUC_ROC_Curve()
 
+
+# In[ ]:
+
+
 x
+
