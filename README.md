@@ -1,12 +1,4 @@
-# ML-Project-Personal-Key-Indicators-of-Heart-Disease
-Project for CS 6375 
-
-Dataset:
 # Personal Key Indicators of Heart Disease
-
-**Authors:** Shreeprasad Anant Sonar, Abhishek Chauhan, Aniket Kulkarni
-
-**Date:** May 8, 2023
 
 In this project, we utilized the 2020 annual CDC survey data of 400K US adults to create models that predict the chance of developing heart disease. Our dataset included important markers such as high blood pressure, high cholesterol, smoking, diabetes, obesity, physical activity, and alcohol use. The dataset was preprocessed by cleaning, normalization, and converting the "HeartDisease" variable to a binary class.
 
